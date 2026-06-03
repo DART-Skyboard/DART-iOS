@@ -1,0 +1,68 @@
+name: DART
+options:
+  bundleIdPrefix: DART-Meadow-LLC
+  deploymentTarget:
+    iOS: "16.0"
+  generateEmptyDirectories: true
+  xcodeVersion: "15.4"
+  xcodeCompatibilityVersion: "Xcode 14.0"
+
+targets:
+  DARTApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - Sources/DARTApp
+      - Sources/DARTApp/Assets.xcassets
+    info:
+      path: Sources/DARTApp/Info.plist
+      properties:
+        CFBundleDisplayName: DART
+        CFBundleName: DART
+        CFBundleIconName: AppIcon
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        ITSAppUsesNonExemptEncryption: false
+        UIRequiresFullScreen: false
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIApplicationSupportsIndirectInputEvents: true
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+    entitlements:
+      path: Sources/DARTApp/DART.entitlements
+    settings:
+      base:
+        PRODUCT_NAME: DART
+        PRODUCT_BUNDLE_IDENTIFIER: DART-Meadow-LLC.Cotharticren
+        DEVELOPMENT_TEAM: L7AHWS9Q6V
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "iPhone Distribution"
+        PROVISIONING_PROFILE: "4f27288c-6ada-4a8b-b93a-b42dec94a720"
+        PROVISIONING_PROFILE_SPECIFIER: "ArcLakeGitHubFlow"
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_ENTITLEMENTS: Sources/DARTApp/DART.entitlements
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CURRENT_PROJECT_VERSION: "18"
+        MARKETING_VERSION: "1.0.7"
+      configs:
+        Debug:
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+        Release:
+          SWIFT_OPTIMIZATION_LEVEL: "-O"
+          DEBUG_INFORMATION_FORMAT: "dwarf-with-dsym"
+
+schemes:
+  DARTApp:
+    build:
+      targets:
+        DARTApp: all
+    archive:
+      config: Release
