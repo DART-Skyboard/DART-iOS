@@ -2,22 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>method</key>
-    <string>app-store-connect</string>
-    <key>teamID</key>
-    <string>L7AHWS9Q6V</string>
-    <key>signingStyle</key>
-    <string>manual</string>
+    <key>method</key><string>app-store</string>
+    <key>teamID</key><string>L7AHWS9Q6V</string>
+    <key>uploadSymbols</key><true/>
+    <key>compileBitcode</key><false/>
     <key>provisioningProfiles</key>
     <dict>
-        <key>DART-Meadow-LLC.Cotharticren</key>
-        <string>ArcLakeGitHubFlow</string>
+        <key>DART-Meadow-LLC.ArcLakeDART</key>
+        <string>DARTGitHubFlow</string>
     </dict>
-    <key>uploadBitcode</key>
-    <false/>
-    <key>uploadSymbols</key>
-    <true/>
-    <key>stripSwiftSymbols</key>
-    <true/>
 </dict>
 </plist>
