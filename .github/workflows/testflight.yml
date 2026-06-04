@@ -19,20 +19,29 @@ jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: dart-src
 
     steps:
       - name: Checkout DART-iOS
         uses: actions/checkout@v4
+        with:
+          repository: DART-Skyboard/DART-iOS
+          path: dart-src
 
       - name: Select Xcode 26.3
         run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+        working-directory: .
 
       - name: Install ASC key
+        working-directory: .
         run: |
           mkdir -p ~/private_keys
           echo "${{ secrets.ASC_KEY_CONTENT }}" > ~/private_keys/AuthKey_NQXQ595W59.p8
 
       - name: Install cert + DART profile
+        working-directory: .
         env:
           CERTIFICATE_BASE64:   ${{ secrets.CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
@@ -49,15 +58,20 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "$DART_PROFILE_BASE64" | base64 --decode > \
             ~/Library/MobileDevice/Provisioning\ Profiles/DARTGitHubFlow.mobileprovision
-          echo "Profile installed:"
+          echo "Profiles installed:"
           ls ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: Install xcodegen + Generate + Archive
+      - name: Install xcodegen
         run: |
-          curl -sL https://github.com/yonaskolb/XcodeGen/releases/download/2.42.0/xcodegen.zip -o xcodegen.zip
-          unzip -q xcodegen.zip
-          sudo cp xcodegen/bin/xcodegen /usr/local/bin/xcodegen
-          xcodegen generate
+          curl -sL https://github.com/yonaskolb/XcodeGen/releases/download/2.42.0/xcodegen.zip -o /tmp/xcodegen.zip
+          unzip -q /tmp/xcodegen.zip -d /tmp/xcodegen_extracted
+          sudo cp /tmp/xcodegen_extracted/xcodegen/bin/xcodegen /usr/local/bin/xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Archive
+        run: |
           xcodebuild archive \
             -scheme DARTApp \
             -configuration Release \
@@ -67,19 +81,20 @@ jobs:
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=L7AHWS9Q6V \
             PROVISIONING_PROFILE_SPECIFIER=DARTGitHubFlow
-          echo "Archive OK:"
           ls $RUNNER_TEMP/DART.xcarchive/
 
       - name: Export IPA
+        working-directory: .
         run: |
           APP=$(find $RUNNER_TEMP/DART.xcarchive -name "*.app" | head -1)
           echo "App: $APP"
           mkdir -p $RUNNER_TEMP/Payload
           cp -r "$APP" $RUNNER_TEMP/Payload/
           cd $RUNNER_TEMP && zip -qr DART.ipa Payload/
-          echo "IPA: $(du -sh DART.ipa)"
+          echo "IPA: $(du -sh $RUNNER_TEMP/DART.ipa)"
 
       - name: Upload to TestFlight
+        working-directory: .
         run: |
           xcrun altool --upload-app --type ios \
             --file $RUNNER_TEMP/DART.ipa \
