@@ -36,9 +36,12 @@ jobs:
 
       - name: Install ASC key
         working-directory: .
+        env:
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
         run: |
           mkdir -p ~/private_keys
-          echo "${{ secrets.ASC_KEY_CONTENT }}" > ~/private_keys/AuthKey_NQXQ595W59.p8
+          printf '%s' "$ASC_KEY_CONTENT" > ~/private_keys/AuthKey_NQXQ595W59.p8
+          echo "ASC key size: $(wc -c < ~/private_keys/AuthKey_NQXQ595W59.p8) bytes"
 
       - name: Install cert + DART profile
         working-directory: .
