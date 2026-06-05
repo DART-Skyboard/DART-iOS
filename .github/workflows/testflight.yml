@@ -1,18 +1,17 @@
 name: DART iOS — TestFlight
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
   workflow_call:
     secrets:
       CERTIFICATE_BASE64:
         required: true
       CERTIFICATE_PASSWORD:
         required: true
-      ASC_KEY_CONTENT:
+      APP_STORE_CONNECT_API_KEY_CONTENT:
         required: true
       DART_PROFILE_BASE64:
+        required: true
+      KEYCHAIN_PASSWORD:
         required: true
 
 jobs:
@@ -50,20 +49,23 @@ jobs:
           CERTIFICATE_BASE64:   ${{ secrets.CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
           DART_PROFILE_BASE64:  ${{ secrets.DART_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD:    ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          security create-keychain -p "ci" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "ci" build.keychain
-          security set-keychain-settings -lut 21600 build.keychain
-          echo "$CERTIFICATE_BASE64" | base64 --decode > cert.p12
-          security import cert.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" \
-            -T /usr/bin/codesign -T /usr/bin/xcodebuild
-          security set-key-partition-list -S apple-tool:,apple: -s -k "ci" build.keychain
+          KEYCHAIN_PATH="$RUNNER_TEMP/dart-signing.keychain-db"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          echo "$CERTIFICATE_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN_PATH" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security -f pkcs12
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "$DART_PROFILE_BASE64" | base64 --decode > \
             ~/Library/MobileDevice/Provisioning\ Profiles/DARTGitHubFlow.mobileprovision
-          echo "Profiles installed:"
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "Profile installed: $(ls ~/Library/MobileDevice/Provisioning\ Profiles/)"
 
       - name: Install xcodegen
         run: |
