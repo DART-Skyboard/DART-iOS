@@ -37,11 +37,12 @@ jobs:
       - name: Install ASC key
         working-directory: .
         env:
-          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          ASC_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: |
-          mkdir -p ~/private_keys
-          printf '%s' "$ASC_KEY_CONTENT" > ~/private_keys/AuthKey_NQXQ595W59.p8
-          echo "ASC key size: $(wc -c < ~/private_keys/AuthKey_NQXQ595W59.p8) bytes"
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$ASC_KEY" > ~/.appstoreconnect/private_keys/AuthKey_NQXQ595W59.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_NQXQ595W59.p8
+          echo "Key size: $(wc -c < ~/.appstoreconnect/private_keys/AuthKey_NQXQ595W59.p8) bytes"
 
       - name: Install cert + DART profile
         working-directory: .
@@ -99,9 +100,14 @@ jobs:
       - name: Upload to TestFlight
         working-directory: .
         run: |
-          xcrun altool --upload-app --type ios \
+          RESULT=$(xcrun altool --upload-app \
+            --type ios \
             --file $RUNNER_TEMP/DART.ipa \
             --apiKey NQXQ595W59 \
             --apiIssuer 90056871-d791-45f6-a770-21399c45e491 \
-            --show-progress
-          echo "✓ Upload complete"
+            --apiKeyPath ~/.appstoreconnect/private_keys/AuthKey_NQXQ595W59.p8 2>&1)
+          echo "$RESULT"
+          if echo "$RESULT" | grep -iE "UPLOAD FAILED|State_Error|Validation failed|^.*ERROR:" | grep -v "No errors"; then
+            echo "Upload failed — see above"; exit 1
+          fi
+          echo "✓ DART upload accepted"
