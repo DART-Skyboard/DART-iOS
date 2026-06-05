@@ -139,6 +139,7 @@ struct DARTLinksView: View {
     private let accent = Color(red:0.0, green:0.85, blue:1.0)
     @State private var showURL: URL? = nil
     @State private var showSafari = false
+    @State private var hasWarmedUp = false  // cold-start guard
 
     private let links: [(String, String, String, String)] = [
         ("Eyes on Exoplanets", "Explore NASA's interactive 3D exoplanet catalog",
@@ -172,7 +173,20 @@ struct DARTLinksView: View {
                     Button {
                         if let url = URL(string: urlStr) {
                             showURL = url
-                            showSafari = true
+                            if hasWarmedUp {
+                                // Normal path: sheet opens immediately
+                                showSafari = true
+                            } else {
+                                // Cold start: brief delay so SFSafariVC
+                                // doesn't render blank on first open
+                                Task {
+                                    try? await Task.sleep(nanoseconds: 120_000_000)
+                                    await MainActor.run {
+                                        hasWarmedUp = true
+                                        showSafari = true
+                                    }
+                                }
+                            }
                         }
                     } label: {
                         DARTCard {
@@ -205,9 +219,18 @@ struct DARTLinksView: View {
             }
             .padding(14)
         }
-        .sheet(isPresented:$showSafari) {
+        .sheet(isPresented:$showSafari, onDismiss: {
+            hasWarmedUp = true  // always instant after first successful open
+        }) {
             if let url = showURL {
                 DARTSafariView(url:url)
+            }
+        }
+        .onAppear {
+            // Warm up the view hierarchy after a brief delay
+            Task {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                hasWarmedUp = true
             }
         }
     }
