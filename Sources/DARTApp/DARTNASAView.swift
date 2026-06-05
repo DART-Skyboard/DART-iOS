@@ -137,18 +137,15 @@ struct DARTDatePickerView: View {
 // MARK: — Links / Explore tab
 struct DARTLinksView: View {
     private let accent = Color(red:0.0, green:0.85, blue:1.0)
-    @State private var showURL: URL? = nil
-    @State private var showSafari = false
-    @State private var hasWarmedUp = false  // cold-start guard
 
     private let links: [(String, String, String, String)] = [
         ("Eyes on Exoplanets", "Explore NASA's interactive 3D exoplanet catalog",
          "globe.americas.fill", "https://eyes.nasa.gov/apps/exo/"),
-        ("La Silla Observatory", "ESO's premier optical observatory in Chile",
+        ("La Silla Observatory", "ESO\'s premier optical observatory in Chile",
          "mountain.2.fill", "https://www.eso.org/sci/facilities/lasilla.html"),
         ("DART Meadow", "Radical Deepscale — LEATR · BRPN · mc³",
          "bird.fill", "https://www.dartmeadow.com"),
-        ("Artemis Program", "NASA's return to the Moon",
+        ("Artemis Program", "NASA\'s return to the Moon",
          "moonphase.new.moon", "https://www.nasa.gov/specials/artemis/"),
         ("NASA APOD Archive", "Every Astronomy Picture of the Day since 1995",
          "photo.stack", "https://apod.nasa.gov/apod/archivepix.html"),
@@ -171,22 +168,19 @@ struct DARTLinksView: View {
 
                 ForEach(links, id:\.0) { title, subtitle, icon, urlStr in
                     Button {
-                        if let url = URL(string: urlStr) {
-                            showURL = url
-                            if hasWarmedUp {
-                                // Normal path: sheet opens immediately
-                                showSafari = true
-                            } else {
-                                // Cold start: brief delay so SFSafariVC
-                                // doesn't render blank on first open
-                                Task {
-                                    try? await Task.sleep(nanoseconds: 120_000_000)
-                                    await MainActor.run {
-                                        hasWarmedUp = true
-                                        showSafari = true
-                                    }
-                                }
-                            }
+                        // Present SFSafariViewController directly via UIKit —
+                        // bypasses SwiftUI sheet entirely, no cold-start blank screen
+                        guard let url = URL(string: urlStr) else { return }
+                        let vc = SFSafariViewController(url: url)
+                        vc.preferredControlTintColor = UIColor(red:0, green:0.85, blue:1, alpha:1)
+                        vc.preferredBarTintColor     = UIColor(red:0.04, green:0.06, blue:0.12, alpha:1)
+                        vc.modalPresentationStyle    = .pageSheet
+                        // Find the topmost view controller and present on it
+                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let root  = scene.windows.first?.rootViewController {
+                            var top = root
+                            while let presented = top.presentedViewController { top = presented }
+                            top.present(vc, animated: true)
                         }
                     } label: {
                         DARTCard {
@@ -219,33 +213,7 @@ struct DARTLinksView: View {
             }
             .padding(14)
         }
-        .sheet(isPresented:$showSafari, onDismiss: {
-            hasWarmedUp = true  // always instant after first successful open
-        }) {
-            if let url = showURL {
-                DARTSafariView(url:url)
-            }
-        }
-        .onAppear {
-            // Warm up the view hierarchy after a brief delay
-            Task {
-                try? await Task.sleep(nanoseconds: 500_000_000)
-                hasWarmedUp = true
-            }
-        }
     }
-}
-
-// MARK: — Safari wrapper
-struct DARTSafariView: UIViewControllerRepresentable {
-    let url: URL
-    func makeUIViewController(context:Context) -> some UIViewController {
-        let vc = SFSafariViewController(url:url)
-        vc.preferredControlTintColor = UIColor(red:0,green:0.85,blue:1,alpha:1)
-        vc.preferredBarTintColor = UIColor(red:0.04,green:0.06,blue:0.12,alpha:1)
-        return vc
-    }
-    func updateUIViewController(_ vc:UIViewControllerType, context:Context) {}
 }
 
 // MARK: — Shared card container
