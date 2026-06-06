@@ -41,12 +41,11 @@ struct DARTSpeedCalcView: View {
                 DARTCard {
                     VStack(spacing: 8) {
                         HStack(spacing: 0) {
-                            formulaChip("E", color: .white.opacity(0.6))
+                            formulaChip("DART", color: accent)
                             Text(" = ").mono(18).fgr(.white.opacity(0.4))
-                            formulaChip("m", color: .white.opacity(0.6))
-                            formulaChip("c³", color: accent)
+                            formulaChip("mc³", color: .white)
                         }
-                        Text("DART velocity = c³  ·  \(formatSci(C_CUBED)) m/s")
+                        Text("velocity = c³  ·  \(formatSci(C_CUBED)) m/s")
                             .mono(9).fgr(.white.opacity(0.3))
                         Text("distance ÷ c³  →  DART travel time")
                             .mono(9).fgr(accent.opacity(0.5))
@@ -122,7 +121,7 @@ struct DARTSpeedCalcView: View {
                                 Text("DART TRAVEL TIME")
                                     .mono(8).fgr(accent.opacity(0.7)).tracking(2)
                                 Spacer()
-                                Text("E = mc³")
+                                Text("DART = mc³")
                                     .mono(8).fgr(.white.opacity(0.2))
                             }
 

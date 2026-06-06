@@ -73,10 +73,10 @@ struct DARTTopChrome: View {
                 .foregroundColor(Color(red:0.0,green:0.85,blue:1.0).opacity(0.7))
                 .tracking(3)
                 .padding(.leading, 1)
-            Text("mc³")
+            Text("= mc³")
                 .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(.white.opacity(0.3))
-                .padding(.leading, 2)
+                .foregroundColor(Color(red:0.0,green:0.85,blue:1.0).opacity(0.5))
+                .padding(.leading, 1)
             Spacer()
             // Live date
             Text(Date(), format: .dateTime.month(.abbreviated).day().year())
