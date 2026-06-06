@@ -19,7 +19,7 @@ targets:
     info:
       path: Sources/DARTApp/Info.plist
       properties:
-        CFBundleDisplayName: DART
+        CFBundleDisplayName: DART Equation
         CFBundleName: DART
         CFBundleIconName: AppIcon
         CFBundleShortVersionString: "$(MARKETING_VERSION)"

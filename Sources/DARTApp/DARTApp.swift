@@ -68,6 +68,11 @@ struct DARTTopChrome: View {
                 .font(.custom("Orbitron-Bold", size: 18))
                 .foregroundColor(.white)
                 .tracking(5)
+            Text("Equation")
+                .font(.custom("Orbitron-Bold", size: 11))
+                .foregroundColor(Color(red:0.0,green:0.85,blue:1.0).opacity(0.7))
+                .tracking(3)
+                .padding(.leading, 1)
             Text("mc³")
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundColor(.white.opacity(0.3))
@@ -90,7 +95,7 @@ struct DARTTopChrome: View {
 struct DARTTabBar: View {
     @Binding var selected: DARTSection
     private let tabs: [(DARTSection, String, String)] = [
-        (.speed, "DART Speed", "gauge.with.needle"),
+        (.speed, "Equation",   "function"),
         (.nasa,  "APOD",       "moonphase.full.moon.inverse"),
         (.links, "Explore",    "safari"),
     ]
